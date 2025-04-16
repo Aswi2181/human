@@ -69,25 +69,46 @@ python manage.py runserver
 
 The application will be available at http://127.0.0.1:8000/
 
+## Deployment to Render
+
+This project is configured for easy deployment to Render.com with the following files:
+
+- `build.sh`: Contains build commands for Render
+- `render.yaml`: Defines the services and databases for Render
+- `runtime.txt`: Specifies the Python version
+
+### Steps to deploy on Render:
+
+1. Create a Render account at https://render.com
+2. Connect your GitHub repository
+3. Click "New" and select "Blueprint" (to use the `render.yaml` configuration)
+4. Select your repository and follow the prompts
+5. Configure environment variables in the Render dashboard for:
+   - Email settings (`EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`)
+   - Stripe keys (`STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
+   - Razorpay keys (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`)
+
+For more details, see [Render's Python deployment documentation](https://render.com/docs/deploy-django).
+
 ## Integration with Your GoDaddy Website
 
 ### 1. Deploy the Backend Service
 
-Deploy this Django application to a hosting service that supports Python/Django (Heroku, PythonAnywhere, DigitalOcean, etc.).
+Deploy this Django application to Render.com using the instructions above.
 
 ### 2. Update Payment Webhook URLs
 
 After deployment, update the webhook URLs in your Stripe/Razorpay dashboard to point to your deployed application's webhook endpoints:
 
-- For Stripe: `https://your-domain.com/stripe-webhook/`
-- For Razorpay: `https://your-domain.com/razorpay-callback/`
+- For Stripe: `https://your-app-name.onrender.com/stripe-webhook/`
+- For Razorpay: `https://your-app-name.onrender.com/razorpay-callback/`
 
 ### 3. Add Subscription Form to Your GoDaddy Website
 
 Add a simple form on your GoDaddy website that submits to your backend:
 
 ```html
-<form action="https://your-domain.com/" method="post">
+<form action="https://your-app-name.onrender.com/" method="post">
   <input type="email" name="email" placeholder="Enter your email" required>
   <button type="submit">Subscribe</button>
 </form>
@@ -96,7 +117,7 @@ Add a simple form on your GoDaddy website that submits to your backend:
 Or use a redirect button:
 
 ```html
-<a href="https://your-domain.com/" class="button">Subscribe Now</a>
+<a href="https://your-app-name.onrender.com/" class="button">Subscribe Now</a>
 ```
 
 ## Customization
@@ -111,7 +132,7 @@ Modify the `send_welcome_email` function in `subscriptions/utils.py` to customiz
 
 ### Payment Settings
 
-Adjust price and currency in `subscription_service/settings.py`:
+Adjust price and currency in the Render environment variables or in `subscription_service/settings.py`:
 
 ```python
 SUBSCRIPTION_PRICE = 1000  # in cents or smallest currency unit
