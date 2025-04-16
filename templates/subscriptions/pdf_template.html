@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Subscription Certificate</title>
+    <style>
+        @page {
+            size: letter portrait;
+            margin: 2.5cm;
+        }
+        body {
+            font-family: "Helvetica", "Arial", sans-serif;
+            color: #333333;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .certificate {
+            border: 2px solid #4e73df;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            background-color: #ffffff;
+        }
+        .certificate-header {
+            margin-bottom: 30px;
+        }
+        .certificate-title {
+            font-size: 28px;
+            color: #4e73df;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        .certificate-subtitle {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #555555;
+        }
+        .certificate-content {
+            margin: 30px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .certificate-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333333;
+            margin: 20px 0;
+        }
+        .certificate-date {
+            margin-top: 30px;
+            font-style: italic;
+            color: #555555;
+        }
+        .certificate-footer {
+            margin-top: 40px;
+            border-top: 1px solid #dddddd;
+            padding-top: 20px;
+            font-size: 14px;
+            color: #555555;
+        }
+        .signature {
+            margin: 30px 0;
+        }
+        .signature-line {
+            border-top: 1px solid #333333;
+            width: 200px;
+            margin: 10px auto;
+        }
+        .signature-name {
+            font-weight: bold;
+        }
+        .certificate-seal {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            border: 2px solid #4e73df;
+            border-radius: 50%;
+            line-height: 100px;
+            margin: 20px 0;
+            color: #4e73df;
+            font-weight: bold;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate">
+        <div class="certificate-header">
+            <h1 class="certificate-title">CERTIFICATE OF SUBSCRIPTION</h1>
+            <div class="certificate-subtitle">Premium Member Access</div>
+        </div>
+        
+        <div class="certificate-seal">SEAL</div>
+        
+        <div class="certificate-content">
+            <p>This is to certify that</p>
+            <div class="certificate-name">{{ email }}</div>
+            <p>has successfully subscribed to our premium service and is hereby granted access to all premium content and benefits.</p>
+        </div>
+        
+        <div class="certificate-date">
+            <p>Issued on: {{ date }}</p>
+        </div>
+        
+        <div class="signature">
+            <div class="signature-line"></div>
+            <div class="signature-name">John Doe</div>
+            <div>CEO & Founder</div>
+        </div>
+    </div>
+    
+    <div class="certificate-footer">
+        <p>Certificate ID: {{ subscriber.id }}</p>
+        <p>This certificate is electronically generated and does not require a physical signature.</p>
+        <p>For verification or support, please contact: support@yourdomain.com</p>
+    </div>
+</body>
+</html> 
