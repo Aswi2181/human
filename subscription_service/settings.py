@@ -76,28 +76,18 @@ WSGI_APPLICATION = 'subscription_service.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# MongoDB configuration
+# Use the DATABASE_URL environment variable if it exists (for Render PostgreSQL)
+# Otherwise use SQLite for local development
 DATABASES = {
-    'default': {
-        'ENGINE': 'djongo',
-        'NAME': 'subscription_db',
-        'CLIENT': {
-            'host': 'mongodb+srv://aswins:Humanx@cluster0.hvjdv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
-            'port': 27017,
-            'username': 'aswins',
-            'password': 'Humanx',
-            'authSource': 'admin',
-            'authMechanism': 'SCRAM-SHA-1',
-        }
-    }
-}
-
-# Use the DATABASE_URL environment variable if it exists (for Render)
-if 'DATABASE_URL' in os.environ:
-    DATABASES['default'] = dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL', f'sqlite:///{BASE_DIR}/db.sqlite3'),
         conn_max_age=600,
     )
+}
+
+# MongoDB Connection (used directly in code, not as Django ORM database)
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb+srv://aswins:Humanx@cluster0.hvjdv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+MONGODB_NAME = os.environ.get('MONGODB_NAME', 'subscription_db')
 
 
 # Password validation

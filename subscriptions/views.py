@@ -11,7 +11,11 @@ from django.views.decorators.http import require_POST
 from .forms import SubscriptionForm
 from .models import Subscriber
 from .utils import generate_pdf, send_welcome_email
+from .mongodb_utils import save_subscriber_to_mongodb, get_subscriber_by_email, update_subscriber_in_mongodb
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 def subscription_form(request):
     """Handle the subscription form submission and redirect to payment"""
@@ -20,6 +24,9 @@ def subscription_form(request):
         if form.is_valid():
             # Save the subscriber without marking as paid
             subscriber = form.save()
+            
+            # Save to MongoDB
+            save_subscriber_to_mongodb(subscriber)
             
             # Choose payment gateway based on configuration or user preference
             payment_gateway = request.POST.get('payment_gateway', 'stripe')
@@ -145,12 +152,19 @@ def razorpay_callback(request):
             subscriber.payment_id = payment_id
             subscriber.save()
             
+            # Update in MongoDB
+            update_subscriber_in_mongodb(subscriber.email, {
+                'is_paid': True,
+                'payment_id': payment_id
+            })
+            
             # Process the successful payment (generate PDF and send email)
             process_successful_payment(subscriber)
             
             return redirect(reverse('thank_you') + f'?email={subscriber.email}')
         
         except Exception as e:
+            logger.error(f"Razorpay callback error: {str(e)}")
             return HttpResponse(f"Error: {str(e)}", status=400)
     
     return HttpResponse("Invalid request method", status=400)
@@ -180,24 +194,47 @@ def stripe_webhook(request):
                 subscriber.payment_id = session.get('payment_intent')
                 subscriber.save()
                 
+                # Update in MongoDB
+                update_subscriber_in_mongodb(subscriber.email, {
+                    'is_paid': True,
+                    'payment_id': session.get('payment_intent')
+                })
+                
                 # Process the successful payment (generate PDF and send email)
                 process_successful_payment(subscriber)
             
         return HttpResponse(status=200)
     
     except Exception as e:
+        logger.error(f"Stripe webhook error: {str(e)}")
         return HttpResponse(status=400)
 
 def process_successful_payment(subscriber):
     """Process actions after successful payment"""
-    # Generate PDF
-    pdf_path = generate_pdf(subscriber)
-    
-    # Send email with PDF
-    if pdf_path:
-        send_welcome_email(subscriber, pdf_path)
-    
-    return True
+    try:
+        # Generate PDF
+        pdf_path = generate_pdf(subscriber)
+        
+        # Update MongoDB with PDF info
+        if pdf_path:
+            update_subscriber_in_mongodb(subscriber.email, {
+                'pdf_generated': True,
+                'pdf_path': subscriber.pdf_path
+            })
+            
+            # Send email with PDF
+            email_sent = send_welcome_email(subscriber, pdf_path)
+            
+            # Update MongoDB with email status
+            if email_sent:
+                update_subscriber_in_mongodb(subscriber.email, {
+                    'email_sent': True
+                })
+            
+        return True
+    except Exception as e:
+        logger.error(f"Error processing payment: {str(e)}")
+        return False
 
 def thank_you(request):
     """Render thank you page after successful payment"""
@@ -218,7 +255,12 @@ def resend_email(request, subscriber_id):
     if subscriber.pdf_path:
         pdf_path = os.path.join(settings.MEDIA_ROOT, subscriber.pdf_path)
         sent = send_welcome_email(subscriber, pdf_path)
+        
+        # Update MongoDB if email was sent
         if sent:
+            update_subscriber_in_mongodb(subscriber.email, {
+                'email_sent': True
+            })
             return HttpResponse("Email resent successfully")
         else:
             return HttpResponse("Failed to send email", status=500)
@@ -226,8 +268,20 @@ def resend_email(request, subscriber_id):
         # Generate PDF if it doesn't exist
         pdf_path = generate_pdf(subscriber)
         if pdf_path:
+            # Update MongoDB with PDF info
+            update_subscriber_in_mongodb(subscriber.email, {
+                'pdf_generated': True,
+                'pdf_path': subscriber.pdf_path
+            })
+            
+            # Send email
             sent = send_welcome_email(subscriber, pdf_path)
+            
+            # Update MongoDB with email status
             if sent:
+                update_subscriber_in_mongodb(subscriber.email, {
+                    'email_sent': True
+                })
                 return HttpResponse("Email sent successfully")
             else:
                 return HttpResponse("Failed to send email", status=500)
