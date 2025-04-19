@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-3c5u=j!!1!ai9m!=zg!3j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,human-x.onrender.com').split(',')
 
 
 # Application definition
@@ -76,13 +76,28 @@ WSGI_APPLICATION = 'subscription_service.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# Database config using environment variable or default to SQLite
+# MongoDB configuration
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL', f'sqlite:///{BASE_DIR}/db.sqlite3'),
+    'default': {
+        'ENGINE': 'djongo',
+        'NAME': 'subscription_db',
+        'CLIENT': {
+            'host': 'mongodb+srv://aswins:Humanx@cluster0.hvjdv.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0',
+            'port': 27017,
+            'username': 'aswins',
+            'password': 'Humanx',
+            'authSource': 'admin',
+            'authMechanism': 'SCRAM-SHA-1',
+        }
+    }
+}
+
+# Use the DATABASE_URL environment variable if it exists (for Render)
+if 'DATABASE_URL' in os.environ:
+    DATABASES['default'] = dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
         conn_max_age=600,
     )
-}
 
 
 # Password validation
