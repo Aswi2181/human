@@ -1,11 +1,11 @@
 # Subscription Service Backend
 
-A Django-based backend service for handling subscriptions with Stripe/Razorpay payment processing, PDF generation, and email notifications.
+A Django-based backend service for handling subscriptions with Stripe payment processing, PDF generation, and email notifications.
 
 ## Features
 
 - User email collection through a clean, responsive form
-- Integration with Stripe and Razorpay payment gateways
+- Integration with Stripe payment gateway
 - Webhook handling for payment verification
 - Dynamic PDF generation (certificates/welcome letters)
 - Automated email sending with PDF attachments
@@ -44,8 +44,7 @@ pip install -r requirements.txt
 Edit `subscription_service/settings.py` and update the following:
 
 - Email configuration (replace with your SMTP details)
-- Stripe API keys (if using Stripe)
-- Razorpay API keys (if using Razorpay)
+- Stripe API keys
 - Other settings as needed
 
 ### 5. Apply database migrations
@@ -86,7 +85,6 @@ This project is configured for easy deployment to Render.com with the following 
 5. Configure environment variables in the Render dashboard for:
    - Email settings (`EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`)
    - Stripe keys (`STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
-   - Razorpay keys (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`)
 
 For more details, see [Render's Python deployment documentation](https://render.com/docs/deploy-django).
 
@@ -98,10 +96,9 @@ Deploy this Django application to Render.com using the instructions above.
 
 ### 2. Update Payment Webhook URLs
 
-After deployment, update the webhook URLs in your Stripe/Razorpay dashboard to point to your deployed application's webhook endpoints:
+After deployment, update the webhook URL in your Stripe dashboard to point to your deployed application's webhook endpoint:
 
-- For Stripe: `https://your-app-name.onrender.com/stripe-webhook/`
-- For Razorpay: `https://your-app-name.onrender.com/razorpay-callback/`
+- `https://your-app-name.onrender.com/stripe-webhook/`
 
 ### 3. Add Subscription Form to Your GoDaddy Website
 
@@ -136,7 +133,7 @@ Adjust price and currency in the Render environment variables or in `subscriptio
 
 ```python
 SUBSCRIPTION_PRICE = 1000  # in cents or smallest currency unit
-SUBSCRIPTION_CURRENCY = 'inr'  # or 'usd'
+SUBSCRIPTION_CURRENCY = 'usd'
 ```
 
 ## License

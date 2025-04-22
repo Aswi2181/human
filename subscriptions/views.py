@@ -1,7 +1,6 @@
 from django.shortcuts import render
 import json
 import stripe
-import razorpay
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -20,23 +19,21 @@ logger = logging.getLogger(__name__)
 def subscription_form(request):
     """Handle the subscription form submission and redirect to payment"""
     if request.method == 'POST':
+        logger.info(f"Received subscription form submission with data: {request.POST}")
         form = SubscriptionForm(request.POST)
         if form.is_valid():
             # Save the subscriber without marking as paid
             subscriber = form.save()
+            logger.info(f"Created new subscriber in Django DB with email: {subscriber.email}")
             
             # Save to MongoDB
-            save_subscriber_to_mongodb(subscriber)
+            mongodb_saved = save_subscriber_to_mongodb(subscriber)
+            logger.info(f"MongoDB save result for {subscriber.email}: {'Success' if mongodb_saved else 'Failed'}")
             
-            # Choose payment gateway based on configuration or user preference
-            payment_gateway = request.POST.get('payment_gateway', 'stripe')
-            
-            if payment_gateway == 'stripe':
-                # Redirect to Stripe checkout
-                return redirect(reverse('stripe_redirect') + f'?email={subscriber.email}')
-            else:
-                # Redirect to Razorpay checkout
-                return redirect(reverse('razorpay_redirect') + f'?email={subscriber.email}')
+            # Redirect to Stripe checkout
+            return redirect(reverse('stripe_redirect') + f'?email={subscriber.email}')
+        else:
+            logger.warning(f"Form validation failed: {form.errors}")
     else:
         form = SubscriptionForm()
     
@@ -76,98 +73,6 @@ def stripe_redirect(request):
     )
     
     return redirect(checkout_session.url)
-
-def razorpay_redirect(request):
-    """Create a Razorpay order and render the payment form"""
-    email = request.GET.get('email')
-    if not email:
-        return HttpResponse("Email parameter is required", status=400)
-    
-    subscriber = get_object_or_404(Subscriber, email=email)
-    
-    # Initialize Razorpay client
-    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-    
-    # Create an order
-    data = {
-        "amount": settings.SUBSCRIPTION_PRICE,
-        "currency": settings.SUBSCRIPTION_CURRENCY,
-        "receipt": f"receipt_{subscriber.id}",
-        "notes": {
-            "email": email,
-            "subscriber_id": subscriber.id
-        }
-    }
-    
-    order = client.order.create(data=data)
-    
-    context = {
-        'order_id': order['id'],
-        'amount': order['amount'],
-        'currency': order['currency'],
-        'key_id': settings.RAZORPAY_KEY_ID,
-        'subscriber': subscriber,
-        'callback_url': request.build_absolute_uri(reverse('razorpay_callback')),
-    }
-    
-    return render(request, 'subscriptions/razorpay_checkout.html', context)
-
-@csrf_exempt
-def razorpay_callback(request):
-    """Handle Razorpay payment callback"""
-    if request.method == 'POST':
-        try:
-            payment_id = request.POST.get('razorpay_payment_id', '')
-            order_id = request.POST.get('razorpay_order_id', '')
-            signature = request.POST.get('razorpay_signature', '')
-            
-            # Initialize Razorpay client
-            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-            
-            # Verify signature
-            params_dict = {
-                'razorpay_payment_id': payment_id,
-                'razorpay_order_id': order_id,
-                'razorpay_signature': signature
-            }
-            
-            client.utility.verify_payment_signature(params_dict)
-            
-            # Get payment details
-            payment = client.payment.fetch(payment_id)
-            
-            # Get subscriber from notes
-            subscriber_id = payment.get('notes', {}).get('subscriber_id')
-            email = payment.get('notes', {}).get('email')
-            
-            if subscriber_id:
-                subscriber = get_object_or_404(Subscriber, id=subscriber_id)
-            elif email:
-                subscriber = get_object_or_404(Subscriber, email=email)
-            else:
-                return HttpResponse("Could not identify subscriber", status=400)
-            
-            # Update subscriber status
-            subscriber.is_paid = True
-            subscriber.payment_id = payment_id
-            subscriber.save()
-            
-            # Update in MongoDB
-            update_subscriber_in_mongodb(subscriber.email, {
-                'is_paid': True,
-                'payment_id': payment_id
-            })
-            
-            # Process the successful payment (generate PDF and send email)
-            process_successful_payment(subscriber)
-            
-            return redirect(reverse('thank_you') + f'?email={subscriber.email}')
-        
-        except Exception as e:
-            logger.error(f"Razorpay callback error: {str(e)}")
-            return HttpResponse(f"Error: {str(e)}", status=400)
-    
-    return HttpResponse("Invalid request method", status=400)
 
 @csrf_exempt
 @require_POST

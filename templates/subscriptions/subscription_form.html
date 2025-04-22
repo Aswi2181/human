@@ -29,29 +29,13 @@
             background-color: #4e73df;
             border-color: #4e73df;
         }
-        .payment-options {
+        .payment-info {
             margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+            text-align: center;
         }
-        .payment-option {
-            cursor: pointer;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 120px;
-        }
-        .payment-option.active {
-            border-color: #4e73df;
-            background-color: #f0f5ff;
-        }
-        .payment-option img {
+        .payment-info img {
             height: 30px;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -76,35 +60,14 @@
                     <div class="form-text">We'll never share your email with anyone else.</div>
                 </div>
                 
-                <div class="payment-options">
-                    <div class="payment-option active" onclick="selectPayment('stripe')">
-                        <img src="https://cdn.jsdelivr.net/gh/paymentsds/mpesa-js-sdk@master/docs/assets/images/icons/card.svg" alt="Credit Card">
-                        <span>Credit Card</span>
-                        <input type="radio" name="payment_gateway" value="stripe" checked style="display: none;">
-                    </div>
-                    <div class="payment-option" onclick="selectPayment('razorpay')">
-                        <img src="https://cdn.jsdelivr.net/gh/paymentsds/mpesa-js-sdk@master/docs/assets/images/icons/wallet.svg" alt="Razorpay">
-                        <span>Razorpay</span>
-                        <input type="radio" name="payment_gateway" value="razorpay" style="display: none;">
-                    </div>
+                <div class="payment-info">
+                    <img src="https://cdn.jsdelivr.net/gh/paymentsds/mpesa-js-sdk@master/docs/assets/images/icons/card.svg" alt="Credit Card">
+                    <p>You'll be redirected to our secure payment page after submission.</p>
                 </div>
                 
                 <button type="submit" class="btn btn-primary">Subscribe Now</button>
             </form>
         </div>
     </div>
-    
-    <script>
-        function selectPayment(method) {
-            // Update UI
-            document.querySelectorAll('.payment-option').forEach(option => {
-                option.classList.remove('active');
-            });
-            document.querySelector(`.payment-option input[value="${method}"]`).parentNode.classList.add('active');
-            
-            // Check the radio button
-            document.querySelector(`input[name="payment_gateway"][value="${method}"]`).checked = true;
-        }
-    </script>
 </body>
 </html> 
