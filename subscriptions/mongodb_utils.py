@@ -27,7 +27,7 @@ def get_mongodb_client():
 def get_mongodb_database():
     """Get the MongoDB database."""
     client = get_mongodb_client()
-    if client:
+    if client is not None:
         try:
             db = client[settings.MONGODB_NAME]
             logger.info(f"Using MongoDB database: {settings.MONGODB_NAME}")
@@ -40,7 +40,7 @@ def get_mongodb_database():
 def save_subscriber_to_mongodb(subscriber):
     """Save a subscriber to MongoDB."""
     db = get_mongodb_database()
-    if not db:
+    if db is None:
         logger.error("Failed to connect to MongoDB database")
         return False
     
@@ -64,7 +64,7 @@ def save_subscriber_to_mongodb(subscriber):
         # Check if subscriber already exists
         existing = collection.find_one({'email': subscriber.email})
         
-        if existing:
+        if existing is not None:
             logger.info(f"Subscriber {subscriber.email} already exists in MongoDB, updating record")
             result = collection.update_one(
                 {'email': subscriber.email}, 
@@ -84,7 +84,7 @@ def save_subscriber_to_mongodb(subscriber):
 def get_subscribers_from_mongodb():
     """Get all subscribers from MongoDB."""
     db = get_mongodb_database()
-    if not db:
+    if db is None:
         logger.error("Failed to connect to MongoDB database")
         return []
     
@@ -101,7 +101,7 @@ def get_subscribers_from_mongodb():
 def get_subscriber_by_email(email):
     """Get a subscriber by email from MongoDB."""
     db = get_mongodb_database()
-    if not db:
+    if db is None:
         logger.error("Failed to connect to MongoDB database")
         return None
     
@@ -109,7 +109,7 @@ def get_subscriber_by_email(email):
     
     try:
         subscriber = collection.find_one({'email': email})
-        if subscriber:
+        if subscriber is not None:
             logger.info(f"Found subscriber with email {email} in MongoDB")
         else:
             logger.info(f"No subscriber found with email {email} in MongoDB")
@@ -121,7 +121,7 @@ def get_subscriber_by_email(email):
 def update_subscriber_in_mongodb(email, update_data):
     """Update a subscriber in MongoDB."""
     db = get_mongodb_database()
-    if not db:
+    if db is None:
         logger.error("Failed to connect to MongoDB database")
         return False
     
