@@ -41,11 +41,32 @@ pip install -r requirements.txt
 
 ### 4. Configure environment settings
 
-Edit `subscription_service/settings.py` and update the following:
+#### Local Development Environment
 
-- Email configuration (replace with your SMTP details)
-- Stripe API keys
-- Other settings as needed
+Run the setup script to configure your environment:
+
+**On Windows:**
+```bash
+setup_env.bat
+```
+
+**On macOS/Linux:**
+```bash
+chmod +x setup_env.sh
+./setup_env.sh
+```
+
+This will create a `.env` file where your API keys and other settings will be stored securely.
+
+Alternatively, you can manually copy `.env.example` to `.env` and fill in your values:
+```bash
+cp .env.example .env
+# Edit .env with your actual values
+```
+
+#### Production Environment (Render.com)
+
+For deployment to Render.com, see detailed instructions in `render-env-setup.md`.
 
 ### 5. Apply database migrations
 

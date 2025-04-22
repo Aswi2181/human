@@ -141,9 +141,9 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'aswinssv@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'wtkb nogp kkpw yhsf')
 
 # Stripe settings (for production, use environment variables)
-STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', 'pk_test_51REP5z19TGqc8iJw7ujWVPDpfDfFtSZvU4Py63ccKkNIb1oW26SR91LSvRD1unvKdte0VLgeEf6g29zPUwZKMPkL00sIaMT4Rn')
-STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_51REP5z19TGqc8iJw5W8FQKiIDrpRBuKHUzOJiLyIh3xMlpzaCOYUQr6XaBTMGXDLkLusnxUN7vdoCqkBzoBvowCD000S31cW7x')
-STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', 'whsec_IGY6E7yNDRwHU2k2xFfKqKDeMNCZlPO0')
+STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY', '')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
 
 # Product settings
 SUBSCRIPTION_PRICE = int(os.environ.get('SUBSCRIPTION_PRICE', 1))  # in cents or smallest currency unit
